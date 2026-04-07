@@ -19,7 +19,7 @@ If `python3.14` is missing, install Python 3.14 (stable) for your OS, then retry
 
 - `app/` — application code
 - `skill/` — full SEO Master bundle (`SKILL.md` + reference `.md` files; committed in this private repo)
-- `deploy/` — systemd and nginx examples
+- `deploy/` — systemd unit, nginx HTTPS config, setup + cert-renewal scripts
 
 ## Deploy on Amazon Linux / Ubuntu (EC2)
 
@@ -54,21 +54,28 @@ Example host IP: `18.222.163.42` (use your Elastic IP or DNS name).
 
 5. **Skill content:** ships with `git clone` / `git pull` under `skill/`. Override files there if you need a custom prompt, then restart the service.
 
-6. **systemd** (adjust `User`/`paths` if needed):
+6. **HTTPS + systemd + nginx (one command):**
+
+   Enable HTTPS in your Tailscale admin console (DNS → Enable HTTPS), then:
 
    ```bash
-   sudo cp deploy/systemd/hosted-skill-api.service /etc/systemd/system/
-   sudo systemctl daemon-reload
-   sudo systemctl enable --now hosted-skill-api
-   sudo systemctl status hosted-skill-api
+   sudo bash deploy/setup-https.sh
    ```
 
-7. **nginx** (optional, for port 80 → app):
+   This installs nginx, generates Tailscale TLS certs, configures the reverse proxy (443 → localhost:8000), installs the systemd unit, and starts everything.
+
+   Verify: `curl -s https://awsec2.tail0fdcca.ts.net/health`
+
+7. **Cert renewal** (Tailscale certs expire ~90 days):
 
    ```bash
-   sudo apt install -y nginx   # or yum install nginx
-   sudo cp deploy/nginx/hosted-skill-api.conf.example /etc/nginx/sites-available/hosted-skill-api
-   # symlink into sites-enabled, test, reload
+   sudo bash deploy/renew-certs.sh
+   ```
+
+   Or add a monthly cron:
+
+   ```bash
+   echo "0 3 1 * * root /opt/hosted-skill-api/ec2-api/deploy/renew-certs.sh" | sudo tee /etc/cron.d/tailscale-cert-renew
    ```
 
 ## Local run
@@ -95,5 +102,7 @@ OpenAPI docs: `GET /docs` when the service is running.
 
 ## Security notes
 
-- Do not expose uvicorn directly to the internet without a reverse proxy and firewall rules.
-- Prefer HTTPS (certbot) and restrict `/docs` in production if you do not want public schema discovery.
+- Uvicorn binds to `127.0.0.1` only; nginx terminates TLS and proxies.
+- HTTPS uses Tailscale-issued certs (`*.ts.net`), valid only for Tailscale peers.
+- Restrict `/docs` in production: uncomment the block in the nginx config to return 404.
+- Use long random `API_KEYS` for customers, not placeholder strings.
