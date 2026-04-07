@@ -2,6 +2,19 @@
 
 FastAPI service that loads the SEO Master skill bundle from `skill/` and exposes `POST /v1/seo` to licensed customers via `X-API-Key`.
 
+## Python version
+
+Use a **stable Python 3.14.x** release (see `requires-python` in `pyproject.toml`). Install 3.14 from your OS or [python.org](https://www.python.org/downloads/), then create the venv with that interpreter:
+
+```bash
+python3.14 -m venv .venv
+source .venv/bin/activate
+python -c "import sys; assert sys.version_info[:2] == (3, 14), 'Need Python 3.14.x'"
+pip install -r requirements.txt
+```
+
+If `python3.14` is missing, install Python 3.14 (stable) for your OS, then retry.
+
 ## Layout
 
 - `app/` — application code
@@ -23,11 +36,11 @@ Example host IP: `18.222.163.42` (use your Elastic IP or DNS name).
 
    Copy this `ec2-api` folder to `/opt/hosted-skill-api/ec2-api` (rsync, git clone, or CI).
 
-3. **Python venv and dependencies:**
+3. **Python venv and dependencies** (Python **3.14.x**):
 
    ```bash
    cd /opt/hosted-skill-api/ec2-api
-   python3 -m venv .venv
+   python3.14 -m venv .venv
    source .venv/bin/activate
    pip install -r requirements.txt
    ```
@@ -62,7 +75,7 @@ Example host IP: `18.222.163.42` (use your Elastic IP or DNS name).
 
 ```bash
 cd ec2-api
-python3 -m venv .venv && source .venv/bin/activate
+python3.14 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
 # edit .env

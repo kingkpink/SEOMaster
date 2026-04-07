@@ -1,3 +1,4 @@
+# Requires Python 3.14.x (stable) — see pyproject.toml and README.md
 anthropic>=0.40.0
 fastapi>=0.115.0
 pydantic-settings>=2.0.0
