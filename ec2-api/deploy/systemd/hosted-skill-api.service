@@ -1,0 +1,16 @@
+[Unit]
+Description=Hosted skill API (FastAPI / uvicorn)
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/hosted-skill-api/ec2-api
+EnvironmentFile=/opt/hosted-skill-api/ec2-api/.env
+ExecStart=/opt/hosted-skill-api/ec2-api/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
