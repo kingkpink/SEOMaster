@@ -19,20 +19,25 @@ export SEO_API_KEY=your-key-here
 **3. Use it:**
 
 ```bash
+# Audit a live website
 ./seo "Audit example.com for SEO issues"
-```
 
-**Pass HTML or code as context:**
+# Audit your local project directory (Next.js, Nuxt, SvelteKit, Astro, HTML, etc.)
+./seo "Full SEO audit" --dir .
 
-```bash
-./seo "Check this page for missing meta tags" --context "<html><head><title>My Page</title></head></html>"
-```
+# Audit a specific folder
+./seo "Check meta tags and structured data" --dir /path/to/my-project
 
-**Pipe content in:**
+# Pass raw HTML or code as context
+./seo "Check this page" --context "<html><head><title>My Page</title></head></html>"
 
-```bash
+# Pipe a live page in
 curl -s https://example.com | ./seo "Audit this HTML"
 ```
+
+The `--dir` flag auto-detects your framework and collects layout files, metadata, robots.txt, sitemap, config, and SEO components — then sends them to the API for a full source-code audit.
+
+**Supported frameworks:** Next.js (App/Pages Router), Nuxt, SvelteKit, Astro, Vite, static HTML.
 
 That's it. No signup, no SDK, no dependencies beyond `curl` and `jq`.
 
