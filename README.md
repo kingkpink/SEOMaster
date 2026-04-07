@@ -85,6 +85,34 @@ Once installed, just describe what you need in Cursor:
 - *"Optimize this Next.js app for Bing Copilot"* — Applies GEO best practices and AI grounding directives
 - *"Make this site work for Baidu"* — Identifies China-specific blockers (JS rendering, ICP, hosting)
 
+## How the skill flows in Cursor
+
+The following screenshots walk through a real SEO audit in Cursor — from the first prompt through documentation, review, and post-deploy follow-up.
+
+### 1. Planning and exploration
+
+When you ask the agent to audit a project (for example with `/seo-master`), it breaks the work into **to-dos**, follows the **10-step workflow**, and **explores** your codebase before making edits.
+
+![Cursor Composer: user prompt with /seo-master, to-do list, and codebase exploration](assets/cursor-skill-planning-and-explore.png)
+
+### 2. Mapping fixes to issues
+
+The agent documents what was wrong and what changed. Below is an example table tying **Google Search Console** issues to **fixes** and **expected results** (from a real project run).
+
+![How each GSC issue is addressed: issue, pages, fix, expected result](assets/gsc-issues-addressed-table.png)
+
+### 3. Reviewing changes
+
+Before you accept edits, the agent presents a **summary of all changes** across files so you can review what was modified in one place.
+
+![Agent summary of modified files and natural-language change descriptions](assets/agent-summary-of-changes.png)
+
+### 4. After you push
+
+Code fixes are only part of the workflow; the agent also outlines **manual steps** after deployment (Search Console validation, sitemap resubmission, Bing / IndexNow, etc.).
+
+![After you push — manual checklist for GSC, Bing, and IndexNow](assets/manual-steps-after-push.png)
+
 ## Key Highlights for Developers
 
 **Engine-specific gotchas that break real projects:**
