@@ -1,4 +1,44 @@
-# Hosted skill API (EC2)
+# SEO Master API
+
+AI-powered SEO audits via a single command.
+
+## Quick start (for customers)
+
+**1. Install** (one line — needs `curl` and `jq`):
+
+```bash
+curl -s https://awsec2.tail0fdcca.ts.net/install > seo && chmod +x seo
+```
+
+**2. Set your key:**
+
+```bash
+export SEO_API_KEY=your-key-here
+```
+
+**3. Use it:**
+
+```bash
+./seo "Audit example.com for SEO issues"
+```
+
+**Pass HTML or code as context:**
+
+```bash
+./seo "Check this page for missing meta tags" --context "<html><head><title>My Page</title></head></html>"
+```
+
+**Pipe content in:**
+
+```bash
+curl -s https://example.com | ./seo "Audit this HTML"
+```
+
+That's it. No signup, no SDK, no dependencies beyond `curl` and `jq`.
+
+---
+
+## Server setup (admin only)
 
 FastAPI service that loads the SEO Master skill bundle from `skill/` and exposes `POST /v1/seo` to licensed customers via `X-API-Key`.
 

@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     # Directory containing SKILL.md (default: ec2-api/skill relative to cwd)
     skill_dir: Path = Path(__file__).resolve().parent.parent / "skill"
     max_output_tokens: int = 4096
+    public_url: str = ""
 
 
 @lru_cache

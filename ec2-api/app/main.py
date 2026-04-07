@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import health, seo
+from app.routers import health, install, seo
 
 app = FastAPI(
     title="Hosted skill API",
@@ -18,6 +18,7 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
+app.include_router(install.router)
 app.include_router(seo.router)
 
 
