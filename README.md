@@ -191,6 +191,86 @@ The spike was driven by three converging effects the skill's fixes triggered sim
 
 ---
 
+## Block AI Scraping Without Losing AI Search Visibility
+
+AI companies run two kinds of crawlers on your website, and most site owners don't realize they can be controlled independently:
+
+- **Training crawlers** scrape your pages to feed large language models. Your content becomes part of their training data — used to generate answers for other people, with no link back to you. This is the part that takes your intellectual property.
+- **Search crawlers** index your pages so they appear in AI-powered search results (ChatGPT Search, Perplexity, Google AI Overviews, Bing Copilot). When a user searches, your page shows up with a citation and a link back to your site. This is the part that drives traffic.
+
+Most AI companies now separate these into distinct bots with different user-agent strings. That means **you can block training while staying indexed in their search products** — through `robots.txt` alone.
+
+### How the split works
+
+| Company | Search bot (allow) | Training bot (block) |
+|---------|-------------------|---------------------|
+| **Google** | `Googlebot` — indexes for Search + AI Overviews | `Google-Extended` — feeds Gemini training |
+| **OpenAI** | `OAI-SearchBot` — powers ChatGPT Search results | `GPTBot` — collects training data |
+| **Apple** | `Applebot` — powers Siri, Spotlight, Safari | `Applebot-Extended` — feeds Apple Intelligence |
+| **Bing** | `Bingbot` — indexes for Bing Search + Copilot | *(no separate training bot — use meta directives)* |
+| **Anthropic** | *(no search product)* | `ClaudeBot` / `anthropic-ai` — training only |
+| **Meta** | *(no search product)* | `meta-externalagent` — Llama training |
+| **Perplexity** | `PerplexityBot` — AI search, cites sources | *(same bot, search-only)* |
+
+### What this looks like in robots.txt
+
+```
+# Let search engines and AI search bots index your site
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+# Block AI training crawlers — they take content, give nothing back
+User-agent: GPTBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
+```
+
+The skill includes a complete reference with **25+ bots**, Next.js implementation examples, and verification steps in [technical-seo.md](technical-seo.md#ai-crawler-management-training-vs-search).
+
+### Why this matters
+
+Without these blocks, every AI training crawler that visits your site is free to ingest your content and use it to train models that compete with you. The models then generate answers derived from your work — without attribution, without a link, and without compensation. Blocking training bots is the minimum step to protect what you've built while still benefiting from AI-powered search traffic.
+
+---
+
 ## Why SEO Matters
 
 If you're building a website — whether it's a business, a project, a publication, or anything meant to be found — SEO is not optional. It is the single largest driver of website traffic, and ignoring it means your content is functionally invisible.
