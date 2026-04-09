@@ -1,4 +1,4 @@
-# SEO Master — Cursor AI Skill for Web Developers
+# SEO Master — Cursor and Claude Skill for Web Developers
 
 An AI-powered SEO auditing and optimization skill for [Cursor](https://cursor.com). Drop it into your project and let your AI coding assistant handle technical SEO across **Google, Bing/Copilot, Yandex, Apple, Baidu, Naver, and Seznam.cz** — so you can focus on building.
 
