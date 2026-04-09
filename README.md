@@ -137,6 +137,102 @@ Code fixes are only part of the workflow; the agent also outlines **manual steps
 | `data-nosnippet` | Yes | Yes | No | No | No |
 | `data-snippet` | No | **Yes** | No | No | No |
 
+## Real-World Results
+
+The following results come from deploying the SEO Master skill against a live Next.js site behind Cloudflare and Vercel in April 2026. The site had been live for over a month with minimal organic traction before the skill was used.
+
+### What the Skill Found and Fixed
+
+The skill ran its 10-step audit and identified **12 distinct issues** across the codebase, resolving all of them in a single session:
+
+| # | Issue Found | Severity | What the Skill Did |
+|---|------------|----------|-------------------|
+| 1 | Middleware sending `X-Robots-Tag: noindex, nofollow` on all non-crawler requests | **Critical** | Narrowed `noindex` to only `/login` and `/api/*` — every other page was being told not to index |
+| 2 | No canonical redirect between apex and www | **Critical** | Added 301 redirect in middleware (fixes 4 GSC redirect errors) |
+| 3 | Sitemap `lastModified` hardcoded to a stale date | **High** | Made `lastModified` dynamic — crawlers now see fresh signals on every visit |
+| 4 | JSON-LD `dateModified` frozen weeks behind actual content | **High** | Set to build-time timestamp so structured data reflects reality |
+| 5 | No Google News eligibility signals | **High** | Added `NewsArticle` JSON-LD, `news_keywords` meta, switched OG type to `article` |
+| 6 | No IndexNow integration | **High** | Built `/api/indexnow` endpoint + bulk submission script; submitted 34 URLs to Bing, Yandex, Seznam.cz |
+| 7 | 5 pages missing canonical URLs | **High** | Added self-referencing canonicals to all affected pages |
+| 8 | 6 archived evidence pages not in sitemap | **Medium** | Added all archive pages to sitemap with appropriate priority |
+| 9 | Title/description lengths exceeding Bing's display limits | **Medium** | Trimmed all 30 page titles and descriptions to fit Bing's truncation thresholds |
+| 10 | Crawlers receiving `no-store, no-cache` headers | **Medium** | Enabled `public, max-age=3600, s-maxage=86400` for crawler user-agents |
+| 11 | BreadcrumbList JSON-LD incomplete | **Low** | Expanded from 7 to 9 items, adding two high-priority sections |
+| 12 | No custom 404 page | **Low** | Added a branded 404 page to retain visitors on dead URLs |
+
+### Traffic Impact
+
+Within **48 hours** of deploying the skill's fixes:
+
+- **12,000+ Cloudflare requests in a single day** — 2x the entire prior week's traffic combined
+- **21,107 total requests** recorded in the Cloudflare reporting window
+- **90.4% of traffic from the United States**, aligned with the site's target audience
+- Multi-engine crawler activity confirmed from **6+ countries** matching known datacenter locations for Google (NL, DE, JP, IN), Yandex (RU), and Baidu (CN)
+
+The spike was driven by three converging effects the skill's fixes triggered simultaneously:
+
+1. **IndexNow blast** — 34 URLs submitted to 4 search engines at once, triggering an immediate crawl storm
+2. **Redirect error resolution** — Google re-validated all previously errored URLs after the 301 fix
+3. **Google News / Discover eligibility** — `NewsArticle` schema + `news_keywords` opened the door to Google's high-traffic news and discovery surfaces
+
+### Before vs. After
+
+| Metric | Before Skill | After Skill |
+|--------|-------------|-------------|
+| Pages with `noindex` signal on non-crawler requests | All pages | Only `/login` and `/api/*` |
+| Sitemap freshness signal | Frozen (March 25) | Dynamic (updates daily) |
+| JSON-LD `dateModified` | Frozen (March 5) | Build-time dynamic |
+| Google News eligible | No | Yes (NewsArticle schema) |
+| IndexNow configured | No | Yes (4 engines) |
+| Canonical redirect (apex → www) | Missing | 301 redirect |
+| Crawler cache headers | `no-store` | `public, max-age=3600` |
+| Pages in sitemap | 28 | 34 |
+| Single-day peak traffic | ~850 requests | 12,000+ requests |
+
+---
+
+## Why SEO Matters
+
+If you're building a website — whether it's a business, a project, a publication, or anything meant to be found — SEO is not optional. It is the single largest driver of website traffic, and ignoring it means your content is functionally invisible.
+
+### Organic Search Dominates All Traffic Sources
+
+**53% of all website traffic** comes from organic search, making it the largest single traffic channel by a wide margin. For B2B websites, that number climbs to **64%**. By comparison, paid search accounts for 15%, social media for 5%, and direct traffic for 22%.
+
+> *Source: BrightEdge (2025). "AI Search Visits Surging in 2025 — But Organic Search Remains the Cornerstone of Digital Growth." [brightedge.com/resources/research-reports](https://www.brightedge.com/resources/research-reports/ai-search-visits-in-surging-2025)*
+
+**68% of all online experiences begin with a search engine.** If your site isn't indexed and ranking, the majority of your potential audience will never know you exist.
+
+> *Source: BrightEdge Channel Performance Report. Referenced in SearchLab, "SEO Statistics 2026." [searchlab.nl/en/statistics/seo-statistics-2026](https://searchlab.nl/en/statistics/seo-statistics-2026)*
+
+### Technical Errors Silently Kill Traffic
+
+**35% of websites** have critical technical issues that prevent proper crawling or indexing. Fixing these errors increases organic traffic by **20–35% on average** within 3–6 months. Pages with unresolved technical SEO problems rank **40–60% lower** than technically clean equivalents.
+
+> *Source: RankTracker (2025). "Technical SEO Statistics — Complete Guide for 2025." [ranktracker.com/blog/technical-seo-statistics-2025](https://ranktracker.com/blog/technical-seo-statistics-2025/)*
+
+**Only 37% of pages** across the web are fully indexed by Google. The other 63% exist but are invisible to search. Getting your pages into that 37% is what technical SEO does.
+
+> *Source: IndexCheckr (2025). "Google Indexing Study: Insights from 16 Million Pages." [indexcheckr.com/resources/google-indexing](https://indexcheckr.com/resources/google-indexing)*
+
+### SEO Has the Highest ROI of Any Marketing Channel
+
+Well-executed SEO delivers a median ROI of **748%** ($7.48 returned per $1 invested). SEO leads close at a **14.6% rate**, compared to 1.7% for outbound marketing. The cost per acquisition through SEO averages **$14**, versus $38 for social media ads and $21 for email.
+
+> *Source: SEOProfy (2026). "SEO ROI Statistics for 2026: Data, Benchmarks & Trends." [seoprofy.com/blog/seo-roi-statistics](https://seoprofy.com/blog/seo-roi-statistics)*
+
+### Most Small Businesses Get This Wrong
+
+**70% of small business websites** contain at least one critical SEO error that suppresses their Google rankings: missing structured data (61%), crawlability/indexing errors (49%), or page speed failures (64%). These aren't cosmetic issues — they directly prevent revenue.
+
+> *Source: PRLog / Las Vegas SEO Study (2025). "7 in 10 Small Business Websites Have Critical SEO Errors." [prlog.org/13136352](https://www.prlog.org/13136352-las-vegas-seo-firm-finds-7-in-10-small-business-websites-have-critical-seo-errors-that-cost-them-rankings-and-revenue.html)*
+
+### The Bottom Line
+
+Your code can be perfect, your design beautiful, and your content invaluable — but if search engines can't find it, index it, and rank it, none of that matters. **SEO is the bridge between building something and having anyone actually see it.** Tools like this skill exist because the gap between "deployed" and "discoverable" is where most projects silently fail.
+
+---
+
 ## Contributing
 
 Found an error, or a search engine updated their docs? PRs welcome. Each file is self-contained — edit the relevant markdown file and submit.
