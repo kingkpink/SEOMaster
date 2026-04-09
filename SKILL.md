@@ -135,6 +135,7 @@ Host: https://example.com
 - NEVER block CSS/JS resources Google needs to render pages
 - `Disallow` does NOT prevent indexing — use `noindex` meta tag instead
 - Verify with Google's robots.txt Tester in Search Console
+- **AI crawlers**: Block training bots (`GPTBot`, `Google-Extended`, `ClaudeBot`, `CCBot`, etc.) while allowing AI search bots (`OAI-SearchBot`, `PerplexityBot`) that cite sources with links back. See [technical-seo.md → AI Crawler Management](technical-seo.md#ai-crawler-management-training-vs-search) for the full bot reference table and templates.
 
 ### XML Sitemap
 

@@ -283,6 +283,196 @@ Disallow: /pages-to-hide-from-baidu/
 Sitemap: https://example.com/sitemap.xml
 ```
 
+## AI Crawler Management: Training vs Search
+
+Most AI companies now separate their crawlers into two distinct types:
+
+1. **AI Search bots** — Power AI-assisted search results (ChatGPT Search, Perplexity, etc.). They index your pages and cite them with a link back. Blocking these removes you from AI search results.
+2. **AI Training bots** — Scrape content to train large language models. They consume your content without linking back. Blocking these has zero effect on search visibility.
+
+This means you can **block AI training while keeping your site indexed in AI search products**.
+
+### AI Crawler Reference Table
+
+| Bot | Company | Purpose | Recommendation |
+|-----|---------|---------|----------------|
+| `Googlebot` | Google | Search indexing (including AI Overviews) | **Allow** |
+| `Google-Extended` | Google | Gemini / AI training only | **Block** |
+| `GoogleOther` | Google | R&D / non-search products | **Block** |
+| `Bingbot` | Microsoft | Bing Search + Copilot indexing | **Allow** |
+| `OAI-SearchBot` | OpenAI | ChatGPT Search results (cites sources) | **Allow** |
+| `GPTBot` | OpenAI | Model training data collection | **Block** |
+| `ChatGPT-User` | OpenAI | Live browsing when users ask ChatGPT to visit a URL | **Block** (scrapes on demand, not indexing) |
+| `PerplexityBot` | Perplexity | AI search engine (cites sources) | **Allow** |
+| `Applebot` | Apple | Siri, Spotlight, Safari search | **Allow** |
+| `Applebot-Extended` | Apple | Apple Intelligence / AI training | **Block** |
+| `anthropic-ai` / `ClaudeBot` / `Claude-Web` | Anthropic | Model training | **Block** |
+| `CCBot` | Common Crawl | Open dataset used by many AI labs | **Block** |
+| `Bytespider` | ByteDance | TikTok / AI training | **Block** |
+| `meta-externalagent` / `FacebookBot` | Meta | AI training (Llama models) | **Block** |
+| `Amazonbot` | Amazon | Alexa / AI training | **Block** |
+| `cohere-ai` | Cohere | Model training | **Block** |
+| `Diffbot` | Diffbot | Web scraping / knowledge graph | **Block** |
+| `YouBot` | You.com | AI search + training | **Block** (combined training) |
+| `img2dataset` | LAION | Image dataset scraping | **Block** |
+| `PetalBot` | Huawei | Search / AI training | **Block** |
+| `Omgilibot` | Omgili | Discussion scraping | **Block** |
+
+### Key Distinctions
+
+**Google**: `Googlebot` handles all search indexing including AI Overviews (formerly SGE). Blocking `Google-Extended` opts you out of Gemini training but keeps you fully indexed in Google Search and AI Overviews. These are independent controls.
+
+**OpenAI**: `OAI-SearchBot` powers ChatGPT Search — when users search the web through ChatGPT, this bot fetches pages and cites them with links back. `GPTBot` is strictly for training data. Blocking `GPTBot` while allowing `OAI-SearchBot` keeps you in ChatGPT search results without contributing to training.
+
+**Apple**: `Applebot` crawls for Siri, Spotlight, and Safari Suggestions. `Applebot-Extended` collects data for Apple Intelligence features. Block Extended, keep the base bot. Note: if no `Applebot` rule exists in robots.txt, Applebot falls back to `Googlebot` rules.
+
+**Bing/Copilot**: There is no separate Copilot training bot. `Bingbot` handles both Bing Search and Copilot answer indexing. To control what Copilot can quote, use `noarchive`, `nocache`, `data-nosnippet`, and `data-snippet` meta directives instead of robots.txt. See [bing-copilot-seo.md](bing-copilot-seo.md).
+
+### robots.txt Template: Block Training, Allow Search
+
+```
+# ── Search engine bots (allow) ─────────────────────────────
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+# ── AI search bots (allow — they cite sources with links) ──
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+
+# ── AI training crawlers (block) ───────────────────────────
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: GoogleOther
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
+
+User-agent: YouBot
+Disallow: /
+
+User-agent: img2dataset
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+User-agent: Omgilibot
+Disallow: /
+
+Sitemap: https://example.com/sitemap.xml
+```
+
+### Next.js Implementation
+
+For Next.js App Router projects using `app/robots.ts`:
+
+```typescript
+import { MetadataRoute } from 'next';
+
+export default function robots(): MetadataRoute.Robots {
+  const commonDisallow = ['/api/', '/auth/', '/admin/'];
+
+  return {
+    rules: [
+      { userAgent: '*', allow: '/', disallow: ['/private/', '/_next/', ...commonDisallow] },
+      { userAgent: 'Googlebot', allow: '/', disallow: commonDisallow },
+      { userAgent: 'Bingbot', allow: '/', disallow: commonDisallow },
+
+      // AI search bots — index for AI-powered search, cite with links
+      ...['PerplexityBot', 'OAI-SearchBot'].map(bot => ({
+        userAgent: bot,
+        allow: '/' as const,
+        disallow: ['/api/'],
+      })),
+
+      // AI training crawlers — block scraping for model training
+      ...[
+        'GPTBot', 'ChatGPT-User', 'CCBot', 'anthropic-ai', 'Claude-Web',
+        'ClaudeBot', 'Bytespider', 'Diffbot', 'FacebookBot', 'Google-Extended',
+        'GoogleOther', 'Applebot-Extended', 'Amazonbot', 'cohere-ai',
+        'meta-externalagent', 'img2dataset', 'PetalBot', 'YouBot', 'Omgilibot',
+      ].map(bot => ({ userAgent: bot, disallow: '/' as const })),
+    ],
+    sitemap: 'https://example.com/sitemap.xml',
+  };
+}
+```
+
+### Verifying Your Setup
+
+After deploying, confirm the generated robots.txt is correct:
+
+```bash
+curl -s https://example.com/robots.txt | head -80
+```
+
+Check that:
+- `GPTBot`, `Google-Extended`, `ClaudeBot`, etc. show `Disallow: /`
+- `OAI-SearchBot`, `PerplexityBot` show `Allow: /`
+- `Googlebot`, `Bingbot` show `Allow: /`
+
+### Staying Current
+
+AI companies frequently launch new crawlers. Monitor your server logs for unfamiliar bot user-agents and check announcements from OpenAI, Google, Anthropic, Meta, and Apple for new bot names. When a new training crawler appears, add it to the block list. When a new AI search bot appears that cites sources, add it to the allow list.
+
 ## Canonical URL Implementation
 
 ### Methods (strongest to weakest)
