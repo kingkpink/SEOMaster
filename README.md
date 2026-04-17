@@ -1,6 +1,6 @@
 # SEO Master — Cursor and Claude Skill for Web Developers
 
-An AI-powered SEO auditing and optimization skill for [Cursor](https://cursor.com). Drop it into your project and let your AI coding assistant handle technical SEO across **Google, Bing/Copilot, Yandex, Apple, Baidu, Naver, and Seznam.cz** — so you can focus on building.
+An AI-powered SEO auditing, CTR optimization, and indexing error resolution skill for [Cursor](https://cursor.com). Drop it into your project and let your AI coding assistant handle technical SEO across **Google, Bing/Copilot, Yandex, Apple, Baidu, Naver, and Seznam.cz** — so you can focus on building.
 
 ## What This Is
 
@@ -10,18 +10,19 @@ Think of it as giving your AI assistant the equivalent of a senior SEO engineer'
 
 ## What It Does
 
-When you trigger the skill (mention SEO, indexing errors, search rankings, sitemaps, etc.), the agent follows a **10-step audit workflow**:
+When you trigger the skill (mention SEO, indexing errors, search rankings, sitemaps, etc.), the agent follows a **11-step audit workflow**:
 
 1. **Discovers your tech stack** — Static HTML, Next.js, Nuxt, SvelteKit, Astro, React SPA, WordPress, etc.
 2. **Audits HTML head tags** — title, meta description, canonical URLs, Open Graph, Twitter Cards
-3. **Audits robots.txt and sitemaps** — validates structure, checks for blocking issues, verifies IndexNow setup
+3. **Optimizes click-through rate (CTR)** — analyzes GSC data, rewrites titles/descriptions for higher CTR, adds dynamic dates for time-sensitive queries, fixes www/non-www duplication, recommends rich snippets
+4. **Audits robots.txt and sitemaps** — validates structure, checks for blocking issues, verifies IndexNow setup
 4. **Audits structured data** — JSON-LD schema.org markup for rich results (Articles, Products, FAQs, Events, etc.)
-5. **Audits internal linking and URL structure** — anchor text, hierarchy depth, orphan pages
-6. **Audits Core Web Vitals** — LCP, INP, CLS with specific fix recommendations
-7. **Audits JavaScript SEO** — SSR/SSG verification, client-side rendering detection
-8. **Audits multi-engine compatibility** — engine-specific directive differences, AI grounding controls, regional requirements
-9. **Fixes issues** in priority order — Critical > High > Medium > Low
-10. **Validates fixes** across all engines and provides post-deploy manual steps
+6. **Audits internal linking and URL structure** — anchor text, hierarchy depth, orphan pages
+7. **Audits Core Web Vitals** — LCP, INP, CLS with specific fix recommendations
+8. **Audits JavaScript SEO** — SSR/SSG verification, client-side rendering detection
+9. **Audits multi-engine compatibility** — engine-specific directive differences, AI grounding controls, regional requirements
+10. **Fixes issues** in priority order — Critical > High > Medium > Low
+11. **Validates fixes** across all engines and provides post-deploy manual steps
 
 The agent doesn't just tell you what's wrong — it edits your code to fix it, then tells you what manual steps remain (like submitting sitemaps in Google Search Console).
 
@@ -43,7 +44,7 @@ The agent doesn't just tell you what's wrong — it edits your code to fix it, t
 
 ```
 seo-master/
-├── SKILL.md                 # Main skill — 10-step audit workflow and quick reference
+├── SKILL.md                 # Main skill — 11-step audit workflow and quick reference
 ├── bing-copilot-seo.md      # Bing's 22 guidelines, Copilot/AI grounding, GEO concepts
 ├── multi-engine-errors.md   # Indexing error types for Bing, Yandex, and Apple (alongside Google)
 ├── regional-engines.md      # Baidu, Naver, Seznam.cz technical requirements
@@ -78,7 +79,8 @@ Even without Cursor, the markdown files serve as a standalone technical SEO refe
 
 Once installed, just describe what you need in Cursor:
 
-- *"Audit this site for SEO issues"* — Runs the full 10-step workflow
+- *"Audit this site for SEO issues"* — Runs the full 11-step workflow
+- *"My CTR is terrible, here's my GSC data"* — Analyzes CTR by position, rewrites titles/descriptions, recommends rich snippets
 - *"Fix my Google Search Console indexing errors"* — Diagnoses and resolves specific GSC issues
 - *"Add structured data to my product pages"* — Implements JSON-LD Product schema
 - *"Set up robots.txt for all search engines"* — Generates a multi-engine robots.txt
