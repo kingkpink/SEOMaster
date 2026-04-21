@@ -55,6 +55,51 @@ Every status type from the GSC Page Indexing Report with root causes, diagnostic
 - Use a redirect mapping spreadsheet during site migrations
 - Never chain more than 2 redirects
 
+#### multiple_redirects (GSC-specific)
+
+**What it means:** Google followed more than 5 redirect hops before reaching (or failing to reach) the final URL. GSC reports this as a distinct subtype of "Redirect Error" in the Page Indexing report.
+
+**How to identify:**
+```bash
+curl -sIL --max-redirs 20 <url> 2>&1 | grep -E "^HTTP|^Location"
+```
+Count the `Location:` lines — more than 5 = `multiple_redirects`.
+
+**Common chains that trigger this:**
+- `http://www.` → `https://www.` → `https://non-www.` → another redirect → error
+- Old migration leftovers: stale redirect rules compounding CMS or CDN redirects
+- www/non-www + HTTP/HTTPS combined: up to 3 hops before even reaching the page
+
+**How to fix:**
+1. Trace every hop: `curl -sIL --max-redirs 20 <url> | grep -E "^HTTP|^Location"`
+2. Update internal links and sitemap entries to point directly to the final canonical URL — skip all intermediate hops
+3. Collapse the redirect chain server-side: `A → B → C → D` becomes `A → D` (one hop)
+4. Remove stale redirect rules from `.htaccess`, nginx, CDN, or framework routing
+5. Ensure the final destination returns 200, not another redirect or error (a chain ending in 403 is a redirect error even with fewer than 5 hops)
+
+**robots.txt and multiple_redirects:**
+
+Google fetches `robots.txt` before crawling. If `robots.txt` itself exceeds 5 redirect hops, Google abandons the fetch and **assumes no crawl restrictions** — silently bypassing all your `Disallow` rules.
+
+Requirements:
+- `https://yourdomain.com/robots.txt` must return **200 directly**
+- `http://` → `https://` for robots.txt is fine (1 hop, within limit)
+- `www` and non-www versions should serve **identical robots.txt content**, or `www/robots.txt` should 301 to non-www in a single hop — never chain `www → https → non-www → robots.txt`
+- If both `www` and non-www independently return 200 for robots.txt, their content must match exactly — Google may fetch either
+
+**Diagnose robots.txt redirect chains:**
+```bash
+# Check all four variants
+curl -sI http://example.com/robots.txt | grep -E "^HTTP|^Location"
+curl -sI https://example.com/robots.txt | grep -E "^HTTP|^Location"
+curl -sI http://www.example.com/robots.txt | grep -E "^HTTP|^Location"
+curl -sI https://www.example.com/robots.txt | grep -E "^HTTP|^Location"
+
+# Verify www and non-www serve identical content
+diff <(curl -s https://example.com/robots.txt) <(curl -s https://www.example.com/robots.txt)
+# Empty output = consistent. Any diff = fix required.
+```
+
 ---
 
 ### 3. Submitted URL Has Crawl Issue
@@ -369,6 +414,7 @@ Every status type from the GSC Page Indexing Report with root causes, diagnostic
 |-------|----------------|
 | Server error (5xx) | Fix server/hosting, check logs |
 | Redirect error | Break redirect loops, shorten chains |
+| multiple_redirects | Collapse chain to 1 hop; update links/sitemap to final canonical URL |
 | Crawl issue | Check DNS, server connectivity |
 | Submitted 404 | Remove from sitemap or restore page |
 | Submitted blocked by robots | Remove Disallow or remove from sitemap |
