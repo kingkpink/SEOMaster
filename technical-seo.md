@@ -106,6 +106,44 @@ For Google, adjust crawl rate in Search Console settings.
 | Forgetting trailing slash | `/admin` matches `/administrator` too | Use `/admin/` for directories |
 | No Sitemap directive | Misses easy discovery signal | Add `Sitemap:` line |
 
+### robots.txt Redirect Handling
+
+Google fetches `robots.txt` before crawling any page. Redirect behavior directly affects whether your crawl rules are enforced.
+
+**Google's robots.txt fetch rules:**
+- Follows up to **5 redirects** for robots.txt
+- If > 5 redirects: treats robots.txt as unreachable → **assumes all crawling allowed** (silently bypasses all `Disallow` rules)
+- If robots.txt returns 4xx: assumes no crawl restrictions (open crawl)
+- If robots.txt returns 5xx: **assumes entire site is restricted** (conservative — blocks crawl)
+
+**Requirements:**
+- `https://yourdomain.com/robots.txt` must return **200 directly** — no redirect at the canonical URL
+- HTTP → HTTPS redirect for robots.txt is acceptable (1 hop, within the 5-hop limit)
+- If www and non-www both resolve independently, serve **identical** robots.txt on both — Google may fetch either depending on which version it discovers first; divergent rules cause unpredictable crawl behavior
+- A `www/robots.txt` that 301s to non-www in a single hop is also acceptable
+
+**Diagnose all four robots.txt variants:**
+```bash
+curl -sI http://example.com/robots.txt   | grep -E "^HTTP|^Location"
+curl -sI https://example.com/robots.txt  | grep -E "^HTTP|^Location"
+curl -sI http://www.example.com/robots.txt  | grep -E "^HTTP|^Location"
+curl -sI https://www.example.com/robots.txt | grep -E "^HTTP|^Location"
+
+# Verify www and non-www serve identical content
+diff <(curl -s https://example.com/robots.txt) <(curl -s https://www.example.com/robots.txt)
+# Empty output = consistent. Any diff = fix required.
+```
+
+**www/non-www and the redirect chain problem:**
+
+A common multi-hop trap for robots.txt:
+```
+http://www.example.com/robots.txt
+  → 301 https://www.example.com/robots.txt   (hop 1: HTTP→HTTPS)
+  → 301 https://example.com/robots.txt       (hop 2: www→non-www)
+```
+Two hops is still within Google's limit but wastes crawl setup time. Worse: if either intermediate hop 404s or 403s, Google falls back to "assume open crawl." Fix: configure www to directly serve robots.txt (200) with identical content, or ensure the www→non-www redirect fires in the same response as HTTP→HTTPS (one 301, not two sequential ones).
+
 ## Meta Robots Tags
 
 ### Supported Directives
