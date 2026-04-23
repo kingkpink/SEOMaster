@@ -636,3 +636,93 @@ https://EXAMPLE.COM/Blog/SEO-Guide/ (mixed case)
 - Max 3 directory levels from root
 - Trailing slash: pick one convention, be consistent
 - Use HTTPS always
+
+## Stale Metadata Audit
+
+Metadata written once tends to drift from reality as the site evolves. Run this audit whenever content changes significantly (new evidence added, records updated, archives added).
+
+### Fields That Go Stale
+
+| Field | Where it lives | Drift cause |
+|-------|---------------|-------------|
+| `dateModified` / `SITE_CONTENT_UPDATED` | layout.tsx, JSON-LD | Not bumped after content updates |
+| File/record counts in titles | page metadata | Data grows but title string is hardcoded |
+| Archive counts ("18 sealed archives") | vault layout | New ZIPs added without updating copy |
+| Buyer/record counts ("1,200+ buyers") | wall-of-shame metadata | Registry grows but metadata isn't updated |
+| "X+ files verified" in vault title | vault layout | Evidence vault grows over time |
+
+### Audit Process
+
+1. **Find all hardcoded numbers in metadata** — grep titles and descriptions for digits:
+   ```bash
+   grep -rn "title:\|description:" src/app --include="*.tsx" --include="*.ts" | grep -E '[0-9]+'
+   ```
+
+2. **Cross-reference against actual data**:
+   - File counts → count actual files in the directory
+   - Record counts → `JSON.parse(fs.readFileSync(...)).length`
+   - Archive counts → count ZIPs in evidence directory
+   - Dates → compare to last git commit date or last data update
+
+3. **Check `dateModified` in JSON-LD** — it should match the most recent substantive content change, not the initial launch date
+
+### Next.js App Router Pattern — Centralized Content Date
+
+Avoid scattered date literals. Define a single constant and bump it when content changes:
+
+```typescript
+// app/layout.tsx
+/** Bump when substantive content changes (SEO freshness signal + JSON-LD dateModified). */
+const SITE_CONTENT_UPDATED = "2026-04-23T00:00:00.000Z";
+
+export const metadata: Metadata = {
+  other: {
+    "article:modified_time": SITE_CONTENT_UPDATED,
+  },
+};
+
+const jsonLd = {
+  "@type": "NewsArticle",
+  dateModified: SITE_CONTENT_UPDATED,
+  // ...
+};
+```
+
+One variable to update, propagates everywhere. Failure to bump this means Google sees a stale `dateModified` and may deprioritize the page in freshness-sensitive queries.
+
+### Next.js App Router — Client vs Server Component Metadata Constraint
+
+`export const metadata` can only appear in **server components**. This affects where you place page-level SEO:
+
+| Component type | Has `"use client"`? | Where to put metadata |
+|---------------|--------------------|-----------------------|
+| Server page | No | Directly in `page.tsx` |
+| Client page | Yes | In a sibling `layout.tsx` (server component) |
+| Mixed (server shell + client child) | Child has `"use client"` | In parent server component |
+
+**Pattern for client-component pages:**
+
+```
+app/
+  wall-of-shame/
+    layout.tsx   ← export const metadata here (server component)
+    page.tsx     ← "use client" here, no metadata export
+```
+
+```typescript
+// app/wall-of-shame/layout.tsx  (server component)
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Wall of Shame — Sex Buyer Registry",
+  description: "...",
+  alternates: { canonical: "https://example.com/wall-of-shame" },
+};
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return children;
+}
+```
+
+**Quick check:** If a page file starts with `"use client"` and also tries to `export const metadata`, Next.js will silently ignore the metadata — no build error, just no SEO. Always verify with View Page Source that meta tags appear in the initial HTML.
+
