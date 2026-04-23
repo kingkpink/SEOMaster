@@ -124,6 +124,67 @@ Always use JSON-LD (Google recommended). Place in `<head>` or `<body>`.
 
 Note: The last item should NOT have an `item` URL (it's the current page).
 
+### BreadcrumbList — Next.js App Router Reusable Component
+
+For Next.js App Router projects with many inner pages, avoid copy-pasting the JSON-LD block. Instead create a server-safe component and import it into each server-component page.
+
+**`app/components/JsonLd.tsx`** (server component — no `"use client"` directive):
+
+```typescript
+const BASE = "https://www.example.com";
+
+export function BreadcrumbJsonLd({ crumbs }: { crumbs: { name: string; path: string }[] }) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: BASE },
+      ...crumbs.map((c, i) => ({
+        "@type": "ListItem",
+        position: i + 2,
+        name: c.name,
+        item: `${BASE}${c.path}`,
+      })),
+    ],
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+```
+
+**Usage in a server-component page:**
+
+```typescript
+import { BreadcrumbJsonLd } from "../components/JsonLd";
+
+export default function SuspectsPage() {
+  return (
+    <PageShell>
+      <BreadcrumbJsonLd crumbs={[{ name: "Suspects & Identifiers", path: "/suspects" }]} />
+      {/* rest of page */}
+    </PageShell>
+  );
+}
+```
+
+**For nested breadcrumbs:**
+
+```typescript
+<BreadcrumbJsonLd crumbs={[
+  { name: "Evidence", path: "/evidence" },
+  { name: "Telegram Logs", path: "/evidence/logs" },
+]} />
+```
+
+**Important constraints:**
+- The `BreadcrumbJsonLd` component must NOT have `"use client"` — it renders a `<script>` tag server-side
+- Import it only in server-component pages (those without `"use client"` at the top)
+- For client-component pages (`"use client"`), add the JSON-LD script in the page's parent `layout.tsx` instead, since `layout.tsx` can be a server component even when its child page is a client component
+
 ### FAQPage
 
 ```json
@@ -440,3 +501,4 @@ Use JSON-LD format. Validate through Naver Search Advisor's built-in tools.
 | Stale data (wrong price, old dates) | Rich result removal | Keep structured data in sync with page content |
 | Only validating with Google | Missed errors on Bing/Yandex | Validate with all three tools |
 | Misleading structured data | Bing may ignore and reduce trust; Google may issue manual action | Markup must accurately reflect visible content |
+
