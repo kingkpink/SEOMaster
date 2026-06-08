@@ -187,6 +187,7 @@ Example: `How to Buy Physical Silver: Dealer Comparison & Premiums (2026 Guide) 
 5. **50-60 characters max** — truncated titles hurt CTR
 6. **Never duplicate titles** across pages — each page must have unique title
 7. **Match search intent exactly** — if users search "COMEX silver inventory February 2026", the title must contain those words
+8. **Account for framework title templates** — SSR frameworks auto-append a brand suffix to every page title (Next.js `title.template: '%s | Brand'`, Nuxt `titleTemplate`, SvelteKit layout `<svelte:head>`). The per-page title STRING you write is not the rendered `<title>`. A 75-char page title plus a ` | Heavy Metal Stats` suffix renders ~95 chars and gets truncated in SERPs. Write the per-page title to ~45-50 chars so the final tag lands at 55-60. Always verify the rendered `<title>` in "View Page Source" (or `curl … | grep '<title>'`), never the source string. To bypass the template on a page that needs full control, use the framework's absolute-title escape (Next.js `title: { absolute: '…' }`).
 
 ### Meta Description Rules for CTR
 
@@ -422,6 +423,35 @@ Choose based on content type. For detailed implementation, see [structured-data.
 
 **Validation:** Test with Google Rich Results Test and Schema.org Validator.
 
+### FAQPage — Visible-Content Requirement (Critical)
+
+Google only grants FAQ rich results when the question/answer text is **visibly rendered on the page** and matches the JSON-LD. Schema-only FAQ (markup with no on-page Q&A) violates Google's structured-data policy — it won't earn the rich result and can trigger a manual action. So adding `FAQPage` schema is a TWO-part change: visible `<dl>`/accordion **and** matching markup.
+
+**Single-source pattern** — define the Q&A once, render both the visible section and the schema from it so they can never drift out of sync (drift silently disqualifies the rich result):
+
+```tsx
+const FAQS: { q: string; a: string }[] = [
+  { q: 'What is X?', a: 'X is …' },
+  // …
+];
+
+// 1) Visible section
+<dl>{FAQS.map(f => (<div key={f.q}><dt>{f.q}</dt><dd>{f.a}</dd></div>))}</dl>
+
+// 2) Schema built from the SAME array
+const faqStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map(f => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+```
+
+When a site has multiple pages eligible for FAQ (e.g. a data page and an education page), write **distinct, intent-matched questions per page** — duplicate FAQ blocks across URLs dilute relevance and can suppress the snippet on all of them.
+
 ## Step 5: Audit Internal Linking and URL Structure
 
 - Use descriptive, keyword-rich anchor text (not "click here")
@@ -540,6 +570,13 @@ curl "https://api.indexnow.org/indexnow?url=https://example.com/page/&key=YOUR_A
 ```
 
 **Not supported by**: Google, Baidu, Apple — use their native submission tools.
+
+**Operational notes (field-tested):**
+
+- **Pass `keyLocation` explicitly** — `…?url=<URL>&key=<KEY>&keyLocation=https://host/<KEY>.txt`. Required when the host serves multiple key files or the key isn't at the document root. A `200` from `api.indexnow.org` means the submission was accepted.
+- **Key file behind a WAF / bot shield is a false alarm.** Many sites front their `public/<key>.txt` with a scrape shield that returns `403`/`401` to a plain `curl` user-agent. IndexNow's own servers fetch the key file server-side and still validate it — so you can get `403` spot-checking the `.txt` yourself while the API returns `200` and accepts the URL. Do NOT treat your own keyfile `403` as failure; trust the API status code.
+- **Protected app endpoint vs. direct API.** Projects often wrap IndexNow in an authenticated route (e.g. `POST /api/indexnow` gated by a `CRON_SECRET`/bearer). If you don't hold that secret locally, skip the wrapper and submit straight to `https://api.indexnow.org/indexnow?url=…&key=…&keyLocation=…`. Any `public/*.txt` file whose **contents equal its filename** is a valid IndexNow key you can use directly.
+- **What to submit.** Ping the exact URLs whose content or metadata changed — including pages whose visible data changed even if the route is unchanged (e.g. a dashboard that now renders backfilled history). Engines only recrawl what you name.
 
 ### Engine-Specific Gotchas
 
