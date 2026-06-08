@@ -26,6 +26,14 @@ When you trigger the skill (mention SEO, indexing errors, search rankings, sitem
 
 The agent doesn't just tell you what's wrong — it edits your code to fix it, then tells you what manual steps remain (like submitting sitemaps in Google Search Console).
 
+### Recently added
+
+Three lessons learned from real projects, now built into the skill:
+
+- **Page titles that get cut off in Google.** Many modern websites automatically add your brand name to the end of every page title (e.g. "...| Your Company"). It's easy to forget that add-on counts toward the length limit, so titles end up too long and get chopped off in search results. The skill now checks the *final* title a visitor actually sees and trims it so nothing important is lost.
+- **Getting those nice expandable Q&A boxes in Google.** The "Frequently Asked Questions" drop-downs you sometimes see under a search result only show up if the questions and answers are actually visible on the page — not just hidden in the code. The skill now adds both at once, from a single list, so they always match and stay in sync.
+- **Telling search engines about updates, reliably.** There's a free way to instantly notify Bing, Yandex, and others that a page changed (called IndexNow). The skill now handles the common snags — like security filters that make it *look* like it failed when it actually worked — so updated pages get re-checked faster.
+
 ## Search Engine Coverage
 
 | Engine | Coverage |
