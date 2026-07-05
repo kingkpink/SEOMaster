@@ -244,6 +244,8 @@ Comprehensive checklist for auditing a web project. Work through each section sy
 - [ ] Content addresses user search intent
 - [ ] Author information present where relevant (E-E-A-T)
 - [ ] Fresh content (recent dates, updated information)
+- [ ] User-visible freshness claims ("last updated", date ranges, row counts) served live or via a single revalidation layer — stacked caches (ISR + unstable_cache on serverless/CDN) can pin them weeks stale
+- [ ] Dataset/source expansions reflected in a dated changelog or about entry (new source names are long-tail keywords; dated entries are freshness + E-E-A-T signals); resubmit sitemap / ping IndexNow after
 ```
 
 ## 13. Accessibility (SEO-relevant)

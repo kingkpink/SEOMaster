@@ -28,8 +28,10 @@ The agent doesn't just tell you what's wrong — it edits your code to fix it, t
 
 ### Recently added
 
-Three lessons learned from real projects, now built into the skill:
+Lessons learned from real projects, now built into the skill:
 
+- **Stale "data freshness" claims from layered caching.** Data-product pages often advertise their coverage ("data from X to Y", "N records, updated daily"). When those numbers render through stacked caching layers (ISR + `unstable_cache` on serverless/CDN runtimes), the page can keep showing dates weeks out of date — which reads as an abandoned site to users and search engines alike. The skill now flags freshness claims served through multi-layer caches and recommends a live query (or a single revalidation layer) for any user-visible "last updated" value.
+- **Dataset expansions are content events.** When a data product adds new sources or deep historical backfill (new exchanges, decades of history), that's indexable content: add a dated changelog/about entry, refresh the data-coverage copy (entity names such as exchange/venue names are long-tail keywords), and ping IndexNow / resubmit the sitemap. Fresh, specific, dated changelog entries are a cheap freshness and E-E-A-T signal.
 - **Page titles that get cut off in Google.** Many modern websites automatically add your brand name to the end of every page title (e.g. "...| Your Company"). It's easy to forget that add-on counts toward the length limit, so titles end up too long and get chopped off in search results. The skill now checks the *final* title a visitor actually sees and trims it so nothing important is lost.
 - **Getting those nice expandable Q&A boxes in Google.** The "Frequently Asked Questions" drop-downs you sometimes see under a search result only show up if the questions and answers are actually visible on the page — not just hidden in the code. The skill now adds both at once, from a single list, so they always match and stay in sync.
 - **Telling search engines about updates, reliably.** There's a free way to instantly notify Bing, Yandex, and others that a page changed (called IndexNow). The skill now handles the common snags — like security filters that make it *look* like it failed when it actually worked — so updated pages get re-checked faster.
