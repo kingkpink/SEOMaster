@@ -18,6 +18,7 @@ Exit code 1 if any CRITICAL issue found (missing title/canonical/noindex).
 """
 
 import argparse
+import html as html_lib  # aliased: `html` is used throughout for page source
 import json
 import re
 import ssl
@@ -58,8 +59,17 @@ def fetch(url: str) -> str:
 
 
 def find(pattern: str, html: str) -> str | None:
+    """Extracted value with HTML entities decoded.
+
+    Length checks must count what a SERP renders, not what the source
+    encodes. A title reading `Foo &amp; Bar` is 9 characters to a user and
+    13 to a regex, and `&#39;` costs five characters for one apostrophe —
+    enough that ordinary titles and descriptions get reported as over the
+    limit when they are comfortably inside it. Decoding here also gives the
+    canonical/OG checks the real URL rather than an `&amp;`-escaped one.
+    """
     m = re.search(pattern, html, re.IGNORECASE | re.DOTALL)
-    return m.group(1).strip() if m else None
+    return html_lib.unescape(m.group(1).strip()) if m else None
 
 
 def audit(url: str) -> list[tuple[str, str]]:
